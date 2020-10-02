@@ -1,5 +1,8 @@
 package com.sergio.accountservice.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /*
@@ -8,9 +11,18 @@ import java.util.concurrent.atomic.AtomicInteger;
     simple amount (like a wallet).
     It shall be able to evolve later to more complex model.
  */
+@Entity
 public class Money {
 
+    @Id
+    @GeneratedValue
+    private Long id;
+
     private AtomicInteger amount;
+
+    private Money() {
+        // Default constructor for Hibernate
+    }
 
     public Money(AtomicInteger amount) {
         this.amount = amount;
