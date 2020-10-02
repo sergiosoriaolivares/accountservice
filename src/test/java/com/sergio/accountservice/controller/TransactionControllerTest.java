@@ -2,11 +2,12 @@ package com.sergio.accountservice.controller;
 
 import com.sergio.accountservice.model.Account;
 import com.sergio.accountservice.model.Money;
+import com.sergio.accountservice.model.Transaction;
 import com.sergio.accountservice.model.TreasuryAccount;
 import com.sergio.accountservice.repository.AccountRepository;
+import com.sergio.accountservice.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -18,8 +19,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class AccountControllerTest {
-    public static final String BASE_PATH = "/accounts";
+public class TransactionControllerTest {
+    public static final String BASE_PATH = "/transactions";
     @LocalServerPort
     private int port;
 
@@ -28,6 +29,9 @@ public class AccountControllerTest {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     @BeforeEach
     public void prepareData() {
@@ -55,43 +59,29 @@ public class AccountControllerTest {
     }
 
     @Test
-    public void shouldReturnAllElements() {
-        List accounts = this.restTemplate.getForObject("http://localhost:" + port + BASE_PATH, List.class);
+    public void shouldDoATransaction() {
+        Transaction transaction = new Transaction("firstAccount", "thirdAccount", 5);
 
-        assertThat(accounts).hasSize(3);
+        Transaction result = this.restTemplate.postForObject("http://localhost:" + port + BASE_PATH, transaction, Transaction.class);
+
+        assertThat(result).isNotNull();
+
+        List transactions = this.restTemplate.getForObject("http://localhost:" + port + BASE_PATH, List.class);
+
+        assertThat(transactions).hasSize(1);
     }
 
     @Test
-    public void shouldFindOne() {
-        String responsebody = this.restTemplate.getForObject("http://localhost:" + port + BASE_PATH + "/secondAccount", String.class);
+    public void shouldDoAnInvalidTransaction() {
+        Transaction transaction = new Transaction("thirdAccount", "first", 5000);
 
-        assertThat(responsebody).isNotNull();
-        assertThat(responsebody).contains("secondAccount");
+        String result = this.restTemplate.postForObject("http://localhost:" + port + BASE_PATH, transaction, String.class);
 
-    }
+        assertThat(result).contains("Bad Request");
 
-    @Test
-    @Disabled("FIXME: There is a problem on jackson configuration, that casue an issue when deserializing Abstract class. I was reading and the solution is clear, but there is something wrong in the code")
-    public void shouldUpdateOne() {
-        Account account = TreasuryAccount.builder()
-                .withName("thirdAccount")
-                .withBalance(Money.builder().withAmount(500).build())
-                .withCurrency(Currency.getInstance("EUR"))
-                .build();
+        List transactions = this.restTemplate.getForObject("http://localhost:" + port + BASE_PATH, List.class);
 
-        this.restTemplate.put("http://localhost:" + port + BASE_PATH + "/thirdAccount", account);
-        String responseBody = this.restTemplate.getForObject("http://localhost:" + port + BASE_PATH + "/thirdAccount", String.class);
-
-        assertThat(responseBody).contains("\"amount\": -500");
-    }
-
-    @Test
-    public void shouldDeleteOne() {
-
-        this.restTemplate.delete("http://localhost:" + port + BASE_PATH + "/secondAccount");
-        String responseBody = this.restTemplate.getForObject("http://localhost:" + port + BASE_PATH + "/secondAccount", String.class);
-
-        assertThat(responseBody).contains("Not Found");
+        assertThat(transactions).isEmpty();
     }
 
 }

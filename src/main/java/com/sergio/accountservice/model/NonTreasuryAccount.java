@@ -10,6 +10,11 @@ public class NonTreasuryAccount extends Account {
         this(null, null, null);
     }
 
+    @Override
+    public Boolean allowTransaction(Integer amount) {
+        return balance.getAmount() >= amount;
+    }
+
     public NonTreasuryAccount(String name, Currency currency, Money balance) {
         super(name, currency, balance, false);
     }

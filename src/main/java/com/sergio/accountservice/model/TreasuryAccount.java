@@ -10,6 +10,11 @@ public class TreasuryAccount extends Account {
         this(null, null, null);
     }
 
+    @Override
+    public Boolean allowTransaction(Integer amount) {
+        return true;
+    }
+
     public TreasuryAccount(String name, Currency currency, Money balance) {
         super(name, currency, balance, true);
     }

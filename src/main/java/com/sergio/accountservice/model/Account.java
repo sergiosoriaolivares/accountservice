@@ -63,6 +63,8 @@ public abstract class Account {
         return treasury;
     }
 
+    public abstract Boolean allowTransaction(Integer amount);
+
     public abstract static class AccountBuilder {
         String name;
         Currency currency;
